@@ -10,7 +10,7 @@ export const site = {
   location: "Lahore, Pakistan",
   status: "Mid-level · Open to roles",
   url: "https://zohaibali151515.github.io",
-  resumeUrl: "/resume.pdf",
+  resumeUrl: "/Zohaib_Ali_Volga_AI_Backend_Engineer.pdf",
   socials: {
     github: "https://github.com/zohaibali151515",
     linkedin: "https://www.linkedin.com/in/zohaibali15",
