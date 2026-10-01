@@ -1,0 +1,51 @@
+---
+title: "Building Product3D Studio: COLMAP, Nerfstudio, and SparkJS in production"
+description: "Turning a 30-second phone capture into a Shopify-embeddable 3D viewer is a six-stage pipeline. Here's what I learned shipping the closed-beta foundation."
+date: "2025-05-30"
+tags: ["product", "ai", "gaussian splatting"]
+---
+
+The pitch was simple: merchants take a 30-second video of a product, the platform returns a shoppable 3D viewer and a Shopify embed. Behind that sentence is a pipeline I've been hardening for the better part of a year.
+
+## The pipeline
+
+```
+Capture (phone video)
+   ↓
+COLMAP — Structure-from-Motion (camera poses + sparse cloud)
+   ↓
+Nerfstudio (splatfacto) — Gaussian Splatting training on the GPU
+   ↓
+SparkJS — per-splat SDF color editing in the browser
+   ↓
+Isolation — remove background, lock to the product
+   ↓
+Export — bundle for Shopify (3D viewer + GLB + AR-ready file)
+```
+
+Each stage has a failure mode that took me longer than I want to admit to characterize:
+
+- **COLMAP**: silently fails on featureless products. White bottles are the worst. The fix is a controlled capture rig with a textured turntable; the fallback is a quality gate that tells the merchant "your capture isn't dense enough — try again".
+- **Nerfstudio**: GPU memory is the wall. A 4K input video at default settings OOMs a 24GB card. Aggressive downsampling + variant of `splatfacto-big` was the right tradeoff for production.
+- **SparkJS**: brilliant for SDF color editing, but its sparse-cloud quality bar is high. Garbage in, weird color halos out.
+
+## What "production-grade" actually meant
+
+I drafted this as a fast prototype, then spent two months turning it into something I'd let a paying merchant near. The substantive shifts:
+
+1. **From sync to SSE-streamed jobs.** The pipeline is minutes-to-tens-of-minutes. You can't block a browser request on it. FastAPI + Celery + Server-Sent Events gives merchants live progress without polling.
+2. **From single-tenant to multi-tenant-aware.** The closed-beta foundation isn't fully multi-tenant yet, but every layer is *aware* of tenancy — per-tenant storage prefixes, per-tenant Stripe metering, per-tenant rate limits. Retrofitting that later would have been miserable.
+3. **From "demo embed" to real Shopify integration.** The embed has to survive Shopify's checkout flow, work on mobile, and not blow the page's INP budget. That meant lazy-loading the splat viewer, pre-warming the WASM SparkJS bundle, and serving a lightweight fallback for low-end devices.
+
+## The non-engineering work that mattered most
+
+Two pieces I underestimated:
+
+- **The capture instruction page.** Every merchant who failed at COLMAP did so because they shot a 360° pan in 11 seconds instead of 30. A two-minute instructional video saved more support tickets than any engineering refinement.
+- **The pricing model.** The pipeline is GPU-heavy. If you charge per video, you have to know your unit economics cold. I built a per-stage cost telemetry layer before pricing was even on the roadmap — that paid for itself the first time I tried to model gross margin.
+
+## The honest status
+
+The pipeline works end-to-end. The SaaS layer (auth, multi-tenancy, monitoring, billing) is still being hardened. I'd describe the product as "closed-beta foundation" — the moving parts are there, the rough edges are being filed off, the production-gap tracker in the repo is a candid list of what's left.
+
+That candor is by design. The number of "AI 3D for e-commerce" startups that demo well and ship nothing is not small. I'd rather have a smaller surface that actually holds up.

@@ -1,0 +1,264 @@
+@import "tailwindcss";
+
+@theme {
+  /* Palette — off-black + iridescent HUD (Unreal Engine-style cyan/violet/pink) */
+  --color-bg: #07060d;
+  --color-bg-elev: #0e0d18;
+  --color-bg-card: #14132a;
+  --color-fg: #ffffff;
+  --color-fg-muted: #8a8aa6;
+  --color-fg-dim: #5a5a72;
+  --color-border: #1c1b30;
+  --color-border-bright: #2b2a45;
+
+  /* Iridescent accents — UE5-leaning electric blue / violet / pink / cyan */
+  --color-iri-blue: #3b6cff;      /* electric blue */
+  --color-iri-violet: #8a4bff;    /* deep violet */
+  --color-iri-pink: #ff4bc0;      /* hot pink */
+  --color-iri-cyan: #4be8ff;      /* cyan */
+
+  /* Legacy accent-* names map to iridescent equivalents so any leftover
+     references from the red/green pass still render correctly. */
+  --color-accent-red: #ff4bc0;
+  --color-accent-red-deep: #8a4bff;
+  --color-accent-green: #4be8ff;
+  --color-accent-green-deep: #3b6cff;
+
+  /* Status */
+  --color-status-live: #4ade80;
+  --color-status-beta: #fbbf24;
+  --color-status-research: #a78bfa;
+
+  /* Typography */
+  --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "JetBrains Mono", monospace;
+
+  /* Radii */
+  --radius-pill: 999px;
+
+  /* Easings */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-body);
+    font-feature-settings: "ss01", "cv01", "cv02";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 108, 255, 0.14), transparent 55%),
+      radial-gradient(ellipse 60% 50% at 80% 110%, rgba(255, 75, 192, 0.10), transparent 55%),
+      radial-gradient(ellipse 40% 30% at 10% 50%, rgba(75, 232, 255, 0.06), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background: var(--color-iri-violet);
+    color: var(--color-fg);
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-bright);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-iri-violet);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Iridescent gradient text — blue → violet → pink */
+  .text-iri {
+    background: linear-gradient(
+      90deg,
+      var(--color-iri-blue) 0%,
+      var(--color-iri-violet) 50%,
+      var(--color-iri-pink) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* Iridescent border (1px gradient) */
+  .border-iri {
+    position: relative;
+    background-clip: padding-box;
+    border: 1px solid transparent;
+  }
+  .border-iri::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    margin: -1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      var(--color-iri-blue),
+      var(--color-iri-violet),
+      var(--color-iri-pink)
+    );
+  }
+
+  /* Hairline divider */
+  .divide-hairline {
+    border-color: var(--color-border);
+  }
+
+  /* Iridescent section seam — a 1px line at the top of a section that fades from edges */
+  .section-seam {
+    position: relative;
+  }
+  .section-seam::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--color-iri-blue) 40%, transparent) 25%,
+      color-mix(in srgb, var(--color-iri-violet) 60%, transparent) 50%,
+      color-mix(in srgb, var(--color-iri-pink) 40%, transparent) 75%,
+      transparent 100%
+    );
+    opacity: 0.6;
+  }
+
+  /* Grid pattern background */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* Noise overlay */
+  .noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  /* Hide native cursor on interactive surfaces when custom cursor is active */
+  .cursor-none-mobile {
+    cursor: none;
+  }
+  @media (hover: none), (pointer: coarse) {
+    .cursor-none-mobile {
+      cursor: auto;
+    }
+  }
+
+  /* Animated subtle pulse for status dots */
+  @keyframes pulse-dot {
+    0%, 100% {
+      box-shadow: 0 0 0 0 currentColor;
+      opacity: 1;
+    }
+    50% {
+      box-shadow: 0 0 0 6px transparent;
+      opacity: 0.6;
+    }
+  }
+  .pulse-dot {
+    animation: pulse-dot 2s ease-out infinite;
+  }
+
+  /* Marquee */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 40s linear infinite;
+  }
+
+  /* Print: resume becomes a clean light-on-white document */
+  @media print {
+    html, body {
+      background: #ffffff !important;
+      color: #111111 !important;
+      background-image: none !important;
+    }
+    .resume-page,
+    .resume-page * {
+      background: transparent !important;
+    }
+    .resume-page {
+      color: #111111 !important;
+    }
+    .resume-page .text-iri {
+      -webkit-text-fill-color: #4b6cff !important;
+      background: none !important;
+      color: #4b6cff !important;
+    }
+    .resume-page [style*="background"] {
+      background: transparent !important;
+    }
+    .resume-page .border-iri::before {
+      display: none !important;
+    }
+    @page {
+      margin: 16mm 14mm;
+    }
+  }
+
+  /* Iridescent shimmer — animated rainbow band for CTAs */
+  @keyframes shimmer-iri {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  .shimmer-iri {
+    background: linear-gradient(
+      90deg,
+      var(--color-iri-blue),
+      var(--color-iri-violet),
+      var(--color-iri-pink),
+      var(--color-iri-cyan),
+      var(--color-iri-blue)
+    );
+    background-size: 200% 100%;
+    animation: shimmer-iri 8s linear infinite;
+  }
+}

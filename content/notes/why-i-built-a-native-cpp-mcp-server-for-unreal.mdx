@@ -1,0 +1,54 @@
+---
+title: "Why I built a native C++ MCP server for Unreal"
+description: "Most engine-control attempts text-scrape the editor. The Unreal MCP Server takes a different route — a native C++ Automation Bridge — and the architecture decisions are worth writing down."
+date: "2025-09-20"
+tags: ["mcp", "unreal", "ai"]
+---
+
+The first time I tried to get an LLM to do anything useful inside Unreal Engine, I did what most people do: I asked it to write Python for `unreal.EditorUtilityLibrary`. It half-worked. About a third of the calls were hallucinated. The rest needed three rounds of "what's the actual API signature in 5.4?" before the agent gave up.
+
+The lesson was obvious — the model didn't need *more* knowledge. It needed a **surface** to act on. So I built one.
+
+## What MCP actually solves
+
+Model Context Protocol gives an LLM a stable, typed contract for tools. The agent doesn't need to know which version of Unreal you're on, which version of `unreal.py` you've vendored, or whether the editor is currently in PIE. It calls `spawn_actor` and the server takes care of the rest.
+
+The contract is the point. Once you have a real contract, you can:
+
+- **Version it.** UE 5.0 and UE 5.7 have different defaults for World Partition; the server papers over that.
+- **Sandbox it.** Dangerous console commands (`crash`, `obj gc`, anything that wipes uncommitted state) get blocked at the bridge.
+- **Cache it.** Asset metadata gets a 10-second TTL so the agent isn't hammering the registry on every tool call.
+
+## Why native C++, not Python
+
+The obvious path is to scaffold the MCP server in TypeScript and have it speak to Unreal via the editor's Python interpreter. I tried it. Three problems showed up immediately:
+
+1. **Python is single-threaded inside the editor.** Any long-running operation (importing a heavy asset, baking lighting) blocks the GIL and freezes the editor. The agent times out before the operation finishes.
+2. **Type fidelity is poor.** Many UE C++ types don't have clean Python wrappers. You lose information at the boundary.
+3. **Deployment is painful.** You need the user to install a Python package in *their* engine, then keep it in sync with the MCP server's version. Drift happens fast.
+
+So the architecture became:
+
+```
+LLM client (Claude / Cursor)
+        ↕  MCP (stdio)
+TypeScript MCP server
+        ↕  IPC
+Native C++ Automation Bridge plugin (loaded into UE)
+        ↕  Engine APIs
+Unreal Engine 5.0 – 5.7
+```
+
+The Rust + WebAssembly bits sit next to the TypeScript layer — they handle hot paths where parsing and validation would otherwise dominate the request time.
+
+## Graceful degradation matters
+
+The server has to start even when Unreal isn't running. That sounds trivial; it isn't. The naive implementation crashes on startup if the bridge handshake fails, which means your AI client gets a confusing tool-not-available error every time you forget to launch the editor before launching Claude Desktop.
+
+The fix: exponential backoff, in-memory tool list always available, every tool returns a clean `editor_not_connected` error when the bridge isn't reachable. The user can launch the editor at any time and the next tool call just works.
+
+## What I'd build next
+
+The thing I'd add today, if I were starting over, is a **transcript replay** mode. The server records every tool call and its result; you can replay a session against a fresh editor instance to verify deterministic outcomes. That would close the loop on the one thing that's still hard about agentic editor control — knowing when a sequence of operations is *reproducible* versus when it depends on hidden state.
+
+That's roughly where the next major version is headed.

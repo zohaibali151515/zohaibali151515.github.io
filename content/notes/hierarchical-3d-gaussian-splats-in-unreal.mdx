@@ -1,0 +1,43 @@
+---
+title: "Hierarchical 3D Gaussian Splats: notes from shipping XV3DGS"
+description: "What changes when you commit to a hierarchical 3DGS architecture inside UE5 — and why it's the only path that scales to real-world capture sizes."
+date: "2025-07-12"
+tags: ["unreal", "gaussian splatting", "xr"]
+---
+
+A 3D Gaussian Splat scene is a million floating ellipsoids with color, opacity, and orientation. The naive renderer sorts all of them and draws them back-to-front every frame. That's fine for the viewer demos you see on Twitter. It is not fine when you want to bring a real-world scene into a UE5 level and stand inside it.
+
+This is roughly the story of why XV3DGS uses a hierarchical representation.
+
+## The naive cost model
+
+For a scene with N splats, the per-frame cost of the naive approach is dominated by:
+
+- Sort: roughly **O(N log N)** every frame, because the camera moves.
+- Rasterization: **O(N)** Gaussians touched, plus the per-pixel blend.
+
+When N is 200k (toy scene), the GPU happily eats it. When N is 8M (a real room captured well), every camera move drops the framerate to single digits. You can lower N — but capture quality drops linearly with it, and at that point you've lost the whole reason to use 3DGS over a textured mesh.
+
+## What "hierarchical" buys you
+
+Hierarchical 3DGS organizes splats into an LOD tree. Distant clusters collapse into a single coarse Gaussian; up-close clusters expand into the full detail. The renderer walks the tree once per frame and only emits the LOD level the camera actually needs.
+
+The cost model becomes:
+
+- Tree walk: **O(log N)** per frame.
+- Rasterization: **O(visible)** rather than O(N).
+
+For interior scenes with strong locality, "visible" is roughly an order of magnitude smaller than N. So you go from 8M-splat-rendering-at-9fps to the same scene running at 90fps in a Quest 3 headset. That's not an optimization; that's a different category of usable.
+
+## The hard part wasn't rendering
+
+I expected the rendering pass to be the hard part. It wasn't. The two things that ate the most time were:
+
+1. **LOD construction at import time.** You can't hand the user a 12-hour bake. The pipeline has to construct the LOD tree in seconds-to-minutes on a workstation GPU, which means choosing your clustering algorithm carefully. K-means works; greedy spatial subdivision is faster and "good enough" for most scenes.
+2. **Streaming the tree across frames.** UE5's streaming subsystem is built around meshes and textures, not splat hierarchies. The plugin has to play nicely with World Partition without pretending to be a mesh actor. Took three iterations to land on a design that doesn't fight the engine.
+
+## Where this ends up
+
+The unlock that matters most isn't the framerate — it's that **you can drop a real-world capture into a UE5 level and treat it like geometry**. You can light it (approximately), collide with it (via a derived proxy), and stand inside it in a headset. That's the move. Once that works, the question becomes: what do you build *next* to that capture?
+
+In my case, the answer is a Lidar twin, an agentic cinematographer, and a commerce-grade viewer for products. But that's three more notes.
