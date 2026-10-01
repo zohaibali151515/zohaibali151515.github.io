@@ -2,7 +2,7 @@
 
 Personal portfolio for **Zohaib Ali** — AI × Immersive Technologist.
 
-Live URL: `https://zohaibaliqureshi15.github.io`
+Live URL: `https://zohaibali151515.github.io`
 
 ---
 
@@ -36,7 +36,7 @@ npm run start
 The site is configured as a static Next.js export and deploys to GitHub Pages from
 the `main` branch through `.github/workflows/deploy-pages.yml`.
 
-Repository: `zohaibaliqureshi15/zohaibaliqureshi15.github.io`
+Repository: `zohaibali151515/zohaibali151515.github.io`
 
 No environment variables are required.
 

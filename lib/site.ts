@@ -9,10 +9,10 @@ export const site = {
   phone: "+92 309 9652168",
   location: "Lahore, Pakistan",
   status: "Mid-level · Open to roles",
-  url: "https://zohaibaliqureshi15.github.io",
+  url: "https://zohaibali151515.github.io",
   resumeUrl: "/resume.pdf",
   socials: {
-    github: "https://github.com/zohaibaliqureshi15",
+    github: "https://github.com/zohaibali151515",
     linkedin: "https://www.linkedin.com/in/zohaibali15",
     x: "https://x.com/zohaibali",
   },

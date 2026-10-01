@@ -58,7 +58,7 @@ export const projects: Project[] = [
     links: [
       {
         label: "GitHub",
-        href: "https://github.com/zohaibaliqureshi15/product3d-studio",
+        href: "https://github.com/zohaibali151515/product3d-studio",
       },
     ],
     problem:
@@ -96,7 +96,7 @@ export const projects: Project[] = [
     links: [
       {
         label: "GitHub",
-        href: "https://github.com/zohaibaliqureshi15/smartwheels",
+        href: "https://github.com/zohaibali151515/smartwheels",
       },
     ],
     problem:
@@ -143,7 +143,7 @@ export const projects: Project[] = [
     links: [
       {
         label: "GitHub",
-        href: "https://github.com/zohaibaliqureshi15/lowpoly-shorts-engine",
+        href: "https://github.com/zohaibali151515/lowpoly-shorts-engine",
       },
     ],
     problem:
@@ -187,7 +187,7 @@ export const projects: Project[] = [
     links: [
       {
         label: "Ops demo (GitHub)",
-        href: "https://github.com/zohaibaliqureshi15/piyoright-ops",
+        href: "https://github.com/zohaibali151515/piyoright-ops",
       },
     ],
     problem:
@@ -223,7 +223,7 @@ export const projects: Project[] = [
     links: [
       {
         label: "GitHub",
-        href: "https://github.com/zohaibaliqureshi15/zohaib-portfolio-mcp",
+        href: "https://github.com/zohaibali151515/zohaib-portfolio-mcp",
       },
     ],
     problem:
@@ -258,7 +258,7 @@ export const projects: Project[] = [
     links: [
       {
         label: "GitHub",
-        href: "https://github.com/zohaibaliqureshi15/ultimate-3dgs-importer",
+        href: "https://github.com/zohaibali151515/ultimate-3dgs-importer",
       },
     ],
     problem:
@@ -294,7 +294,7 @@ export const projects: Project[] = [
     links: [
       {
         label: "GitHub",
-        href: "https://github.com/zohaibaliqureshi15/advanced-sessions-web-bootstrap",
+        href: "https://github.com/zohaibali151515/advanced-sessions-web-bootstrap",
       },
       {
         label: "Upstream (Mordentral)",
@@ -334,7 +334,7 @@ export const projects: Project[] = [
     links: [
       {
         label: "GitHub",
-        href: "https://github.com/zohaibaliqureshi15/lidar-twin-ue",
+        href: "https://github.com/zohaibali151515/lidar-twin-ue",
       },
     ],
     problem:
@@ -370,7 +370,7 @@ export const projects: Project[] = [
     links: [
       {
         label: "GitHub",
-        href: "https://github.com/zohaibaliqureshi15/agentic-cinematographer",
+        href: "https://github.com/zohaibali151515/agentic-cinematographer",
       },
     ],
     problem:
